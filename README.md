@@ -1,3 +1,23 @@
+# hashcat-shallenge
+
+This is fork of hashcat, dirty tailored for computing the lowest sha256 hash for use with shallenge: https://shallenge.quirino.net/.
+
+It's implemented as standalone hash mode 90000 (-m 90000). To run it: `./hashcat -m 90000 -a 3 --self-test-disable --potfile-disable --keep-guessing hash.txt -1 ?l?u?d norohind/?1?1?1?1?1?1`.
+
+Adjust mask to suit you needs, it will print to stdout lines like:
+```
+DBG: calling mark_hash; 34
+00000000029389fc07b278e94c40a501d27a604d30c23d32e57f4cfcd56d3b53:norohind/5569335763411
+```
+
+It means it found a hash with 34 leading zeroes (in binary representation). To produce such hash a string `norohind/5569335763411` was used.
+It will print any time there are more than 31 leading zero bit.
+Keep in mind that showed hash isn't hash of this string. To get hash of the found string you have to hash it by yourself:
+```shell
+$ echo -n norohind/5569335763411 | sha256sum 
+000000002947dfe5f4fa303e394bbd8b15a6875ca8722cd6718b753910a6ee96  -
+```
+
 ## *hashcat* ##
 
 **hashcat** is the world's fastest and most advanced password recovery utility, supporting five unique modes of attack for over 300 highly-optimized hashing algorithms. hashcat currently supports CPUs, GPUs, and other hardware accelerators on Linux, Windows, and macOS, and has facilities to help enable distributed password cracking.
