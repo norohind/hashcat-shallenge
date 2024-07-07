@@ -31,7 +31,7 @@ KERNEL_FQ void m90000_sxx (KERN_ATTR_VECTOR ())
 
   const u32 search[4] =
   {
-    digests_buf[DIGESTS_OFFSET_HOST].digest_buf[DGST_R0],
+    digests_buf[DIGESTS_OFFSET_HOST].digest_buf[DGST_R0],  // digest buf contains target hash
     digests_buf[DIGESTS_OFFSET_HOST].digest_buf[DGST_R1],
     digests_buf[DIGESTS_OFFSET_HOST].digest_buf[DGST_R2],
     digests_buf[DIGESTS_OFFSET_HOST].digest_buf[DGST_R3]
@@ -76,7 +76,20 @@ KERNEL_FQ void m90000_sxx (KERN_ATTR_VECTOR ())
     const u32x r1 = ctx.h[DGST_R1];
     const u32x r2 = ctx.h[DGST_R2];
     const u32x r3 = ctx.h[DGST_R3];
+//    printf("r0=%d; r1=%d; r2=%d; r3=%d\n", r0, r1, r2, r3);
+    //    COMPARE_S_SIMD (r0, r1, r2, r3);
+//    if (((r0) == search[0]) && ((r1) == search[1]) && ((r2) == search[2]) && ((r3) == search[3]))
+    if (r0 == 0)
+    {
+      const u32 final_hash_pos = DIGESTS_OFFSET_HOST + 0;
 
-    COMPARE_S_SIMD (r0, r1, r2, r3);
+      if (hc_atomic_inc (&hashes_shown[final_hash_pos]) == 0)
+      {
+        int zeroes = 32 + __clz(r1);  // we can assume 32 bits for r0 as we're checking it to be zero above
+        printf("DBG: calling mark_hash; %d\n", zeroes);
+        mark_hash (plains_buf, d_return_buf, SALT_POS_HOST, DIGESTS_CNT, 0, final_hash_pos, gid, il_pos, 0, 0);
+      }
+    }
+    // run with ./hashcat -m 90000 -a 3 --self-test-disable --potfile-disable --keep-guessing hash.txt -1 ?l?u?d norohind/?1?1?1?1?1?1
   }
 }
